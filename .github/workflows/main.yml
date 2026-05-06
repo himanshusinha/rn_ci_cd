@@ -1,4 +1,4 @@
-name: React Native Android CI
+name: iOS CI
 
 on:
   push:
@@ -7,14 +7,14 @@ on:
       - inital-setup
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-ios:
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -22,22 +22,20 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Grant Execute Permission
-        run: chmod +x android/gradlew
-
-      - name: Build Debug APK
+      - name: Install CocoaPods
         run: |
-          cd android
-          ./gradlew assembleDebug
+          cd ios
+          pod install
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          name: app-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          ruby-version: 3.2
+
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      - name: Build iOS App
+        run: |
+          cd ios
+          fastlane build_ios
